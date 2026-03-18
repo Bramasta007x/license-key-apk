@@ -5,7 +5,6 @@ namespace App\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use App\Services\TicketPdfGeneratorService;
 use Illuminate\Support\Facades\Log;
 
 class PaymentSuccessMail extends Mailable
@@ -23,24 +22,15 @@ class PaymentSuccessMail extends Mailable
 
     public function build()
     {
-        Log::info('[Mail] Building PaymentSuccessMail with split tickets', [
+        Log::info('[Mail] Building PaymentSuccessMail for License Key', [
             'order_id' => $this->order->order_number,
         ]);
 
-        $pdfService = new TicketPdfGeneratorService();
-        $attachments = $pdfService->generateAll($this->registrant, $this->order);
-
-        $email = $this->subject('Pembayaran Berhasil - ' . $this->order->order_number)
+        return $this->subject('Pembayaran Berhasil - License Key Anda (' . $this->order->order_number . ')')
             ->view('emails.payment_success')
             ->with([
                 'registrant' => $this->registrant,
                 'order' => $this->order,
             ]);
-
-        foreach ($attachments as $a) {
-            $email->attachData($a['data'], $a['name'], ['mime' => 'application/pdf']);
-        }
-
-        return $email;
     }
 }
