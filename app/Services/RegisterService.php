@@ -2,80 +2,43 @@
 
 namespace App\Services;
 
-use App\Models\{Registrant, Attendee, Ticket, Order};
+use App\Models\Registrant;
+use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 use Midtrans\Snap;
 
 class RegisterService
 {
+    /**
+     * Harga fix untuk License Key.
+     * bisa memindahkannya ke config atau database jika harganya dinamis.
+     */
+    private const LICENSE_PRICE = 150000; 
+
     public function register(array $payload)
     {
         return DB::transaction(function () use ($payload) {
             $registrantData = $payload['registrant'];
-            $attendeesData = $payload['attendees'] ?? [];
 
-            $hasAttendees = count($attendeesData) > 0;
+            // Generate Serial Number (8-12 Karakter, Alphanumeric + ASCII)
+            $serialNumber = $this->generateSerialNumber();
+            $totalCost = self::LICENSE_PRICE;
 
-            if (1 + count($attendeesData) > 4) {
-                abort(422, "Maksimal 4 tiket per registrasi (termasuk registrant).");
-            }
-
-            // Hitung total harga dan tiket 
-            $ticketsInvolved = [];
-
-            // Menambahkan tiket registrant
-            $registrantTicket = Ticket::lockForUpdate()->findOrFail($registrantData['ticket_id']);
-            $ticketsInvolved[] = $registrantTicket;
-
-            // Menambahkan tiket attendees jika ada
-            if ($hasAttendees) {
-                foreach ($attendeesData as $att) {
-                    $ticket = Ticket::lockForUpdate()->findOrFail($att['ticket_id']);
-                    $ticketsInvolved[] = $ticket;
-                }
-            }
-
-            $totalCost = collect($ticketsInvolved)->sum('price');
-            $totalTickets = count($ticketsInvolved);
-
-            // Validasi stok tersisa 
-            foreach ($ticketsInvolved as $t) {
-                if ($t->remaining <= 0) {
-                    abort(422, "Tiket {$t->title} sudah habis.");
-                }
-            }
-
+            // Buat data pendaftar/pembeli lisensi
             $registrant = Registrant::create([
-                'unique_code' => 'JMF-' . date('Y') . '-' . str_pad(mt_rand(1, 99999), 5, '0', STR_PAD_LEFT),
-                'ticket_id' => $registrantTicket->id,
+                // Kita ganti unique_code menjadi serial_number (pastikan sesuaikan di migration)
+                'serial_number' => $serialNumber, 
                 'name' => $registrantData['name'],
                 'email' => $registrantData['email'],
                 'phone' => $registrantData['phone'],
-                'gender' => $registrantData['gender'] ?? null,
-                'birthdate' => $registrantData['birthdate'] ?? null,
-                'document' => $registrantData['document'] ?? null,
                 'total_cost' => $totalCost,
-                'total_tickets' => $totalTickets,
-                'status' => 'pending',
+                'status' => 'pending', // Key belum aktif sebelum dibayar
             ]);
 
-            //  Buat attendees (jika ada) 
-            if ($hasAttendees) {
-                foreach ($attendeesData as $att) {
-                    Attendee::create([
-                        'registrant_id' => $registrant->id,
-                        'ticket_id' => $att['ticket_id'],
-                        'name' => $att['name'],
-                        'gender' => $att['gender'] ?? null,
-                        'birthdate' => $att['birthdate'] ?? null,
-                        'document' => $att['document'] ?? null,
-                    ]);
-                }
-            }
-
+            // Buat Order untuk ditagihkan ke Midtrans
             $order = Order::create([
                 'registrant_id' => $registrant->id,
-                'order_number' => 'JMF' . date('Y') . '-' . str_pad(mt_rand(1, 99999), 5, '0', STR_PAD_LEFT),
+                'order_number' => 'LIC-' . date('Ymd') . '-' . str_pad(mt_rand(1, 99999), 5, '0', STR_PAD_LEFT),
                 'amount' => $totalCost,
                 'currency' => 'IDR',
                 'payment_method' => 'midtrans_snap',
@@ -93,9 +56,17 @@ class RegisterService
                     'email' => $registrant->email,
                     'phone' => $registrant->phone,
                 ],
-                'item_details' => $this->mapTicketItems($ticketsInvolved),
+                'item_details' => [
+                    [
+                        'id' => 'APP-LIC-01',
+                        'price' => $totalCost,
+                        'quantity' => 1,
+                        'name' => 'Desktop Application License Key',
+                    ]
+                ],
                 'callbacks' => [
-                    'finish' => url("https://jayapuramusicfest.com/order/{$order->order_number}"),
+                    // redirect ke halaman sukses download/terima kasih
+                    'finish' => url("http://localhost:3000/order/{$order->order_number}"),
                 ],
             ];
 
@@ -115,26 +86,30 @@ class RegisterService
                     'payment_status' => $order->payment_status,
                     'midtrans_snap_token' => $snapToken,
                     'redirect_url' => $redirectUrl,
-                    'finish_redirect' => url("http://localhost:3000/order/{$order->order_number}"),
                 ],
                 'registrant' => [
                     'id' => $registrant->id,
-                    'unique_code' => $registrant->unique_code,
                 ],
             ];
         });
     }
 
     /**
-     * Format item untuk Midtrans Snap
+     * Generate Serial Number Acak
+     * Panjang: 8 s/d 12 Karakter
+     * Mengandung: Huruf Besar, Huruf Kecil, Angka, dan ASCII symbol
      */
-    private function mapTicketItems($tickets)
+    private function generateSerialNumber(): string
     {
-        return collect($tickets)->map(fn($ticket) => [
-            'id' => $ticket->id,
-            'price' => $ticket->price,
-            'quantity' => 1,
-            'name' => $ticket->title,
-        ])->toArray();
+        $length = mt_rand(8, 12);
+        // Kumpulan karakter: Alphanumeric + ASCII character
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()-_=+<>?';
+        $serialNumber = '';
+        
+        for ($i = 0; $i < $length; $i++) {
+            $serialNumber .= $characters[random_int(0, strlen($characters) - 1)];
+        }
+
+        return $serialNumber;
     }
 }

@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create("registrants", function (Blueprint $table) {
             $table->uuid("id")->primary();
-            $table->string("unique_code")->unique();
+            $table->string("serial_number")->unique();
             $table->string("name");
             $table->string("email")->unique();
             $table->string("phone")->unique();
