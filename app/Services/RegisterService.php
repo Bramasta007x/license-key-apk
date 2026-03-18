@@ -13,7 +13,7 @@ class RegisterService
      * Harga fix untuk License Key.
      * bisa memindahkannya ke config atau database jika harganya dinamis.
      */
-    private const LICENSE_PRICE = 150000; 
+    private const LICENSE_PRICE = 150000;
 
     public function register(array $payload)
     {
@@ -27,7 +27,7 @@ class RegisterService
             // Buat data pendaftar/pembeli lisensi
             $registrant = Registrant::create([
                 // Kita ganti unique_code menjadi serial_number (pastikan sesuaikan di migration)
-                'serial_number' => $serialNumber, 
+                'serial_number' => $serialNumber,
                 'name' => $registrantData['name'],
                 'email' => $registrantData['email'],
                 'phone' => $registrantData['phone'],
@@ -71,7 +71,14 @@ class RegisterService
             ];
 
             $snapToken = Snap::getSnapToken($midtransParams);
-            $redirectUrl = "https://app.midtrans.com/snap/v2/vtweb/" . $snapToken;
+
+            // CEK ENVIRONMENT UNTUK URL SNAP
+            $isProduction = config('midtrans.is_production', false);
+            $snapBaseUrl = $isProduction
+                ? "https://app.midtrans.com/snap/v2/vtweb/"
+                : "https://app.sandbox.midtrans.com/snap/v2/vtweb/";
+
+            $redirectUrl = $snapBaseUrl . $snapToken;
 
             $order->update([
                 'midtrans_snap_token' => $snapToken,
@@ -105,7 +112,7 @@ class RegisterService
         // Kumpulan karakter: Alphanumeric + ASCII character
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()-_=+<>?';
         $serialNumber = '';
-        
+
         for ($i = 0; $i < $length; $i++) {
             $serialNumber .= $characters[random_int(0, strlen($characters) - 1)];
         }

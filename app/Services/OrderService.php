@@ -8,21 +8,16 @@ class OrderService
 {
     public function getOrderStatus(string $orderNumber)
     {
-
-        $order = Order::with([
-            'registrant.ticket',
-            'registrant.attendees.ticket',
-        ])->where('order_number', $orderNumber)->first();
+        $order = Order::with(['registrant'])->where('order_number', $orderNumber)->first();
 
         if (!$order) {
-
             return null;
         }
 
         $registrant = $order->registrant;
 
         $formattedPaymentMethod = $order->payment_channel
-            ? ucwords(str_replace(['_', '-'], ' ', $order->payment_channel))
+            ? strtoupper(str_replace(['_', '-'], ' ', $order->payment_channel))
             : '-';
 
         return [
@@ -35,21 +30,10 @@ class OrderService
                 'name' => $registrant->name,
                 'email' => $registrant->email,
                 'phone' => $registrant->phone,
-                'gender' => $registrant->gender,
-                'birthdate' => $registrant->birthdate,
-                'ticket_title' => $registrant->ticket->title ?? null, 
-                'ticklet_type' => $registrant->ticket->code ?? null
-            ],
-            'attendees' => $registrant->attendees->map(function ($att) {
-                return [
-                    'name' => $att->name,
-                    'gender' => $att->gender,
-                    'birthdate' => $att->birthdate,
-                    'ticket_title' => $att->ticket->title ?? null,
-                    'ticklet_type' => $att->ticket->code ?? null,
-                    'document' => $att->document ?? null,
-                ];
-            })->values(),
+                'serial_number' => $order->payment_status === 'paid' 
+                    ? $registrant->serial_number 
+                    : 'Menunggu Pembayaran...', 
+            ]
         ];
     }
 }
