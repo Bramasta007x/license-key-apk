@@ -13,7 +13,7 @@ class RegisterService
      * Harga fix untuk License Key.
      * bisa memindahkannya ke config atau database jika harganya dinamis.
      */
-    private const LICENSE_PRICE = 150000;
+    private const LICENSE_PRICE = 15000000;
 
     public function register(array $payload)
     {

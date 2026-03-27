@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Payment\PaymentController;
+use App\Http\Controllers\Public\LicenseController;
 use App\Http\Controllers\Public\OrderController;
 use App\Http\Controllers\Public\RegisterController;
 
@@ -16,6 +17,8 @@ Route::prefix("v1")->group(function () {
         OrderController::class,
         "status",
     ]);
+
+    Route::post('/license/verify', [LicenseController::class, 'verify']);
 
     Route::prefix("admin")->group(function () {
         Route::post("register", [AuthController::class, "register"]);

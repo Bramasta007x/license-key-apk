@@ -22,6 +22,7 @@ class Registrant extends Model
         "phone",
         "total_cost",
         "status", // pending / active
+        "machine_id",
     ];
 
     /**
