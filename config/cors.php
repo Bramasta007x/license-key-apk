@@ -13,8 +13,8 @@ return [
     'allowed_origins' => [
         'http://127.0.0.1:3000',
         'http://localhost:5173',
-        'https://dev.efisienin.com/',
-        'https://defisienin.com/',
+        'https://dev.efisienin.com',
+        'https://defisienin.com',
          env('FRONTEND_URL', 'https://jayapuramusicfest.com'),
     ],
 
