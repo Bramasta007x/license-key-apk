@@ -15,6 +15,7 @@ return [
         'http://localhost:5173',
         'https://dev.efisienin.com',
         'https://defisienin.com',
+        'https://efisienin.com',
          env('FRONTEND_URL', 'https://jayapuramusicfest.com'),
     ],
 
