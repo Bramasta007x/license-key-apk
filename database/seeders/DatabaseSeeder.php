@@ -13,9 +13,6 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             AdminSeeder::class,
-            TicketSeeder::class,
-            ArtistSeeder::class,
-            LandingPageConfigSeeder::class
         ]);
     }
 }

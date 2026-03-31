@@ -16,6 +16,7 @@ class RegisterController extends Controller
             'registrant.name' => 'required|string|max:255',
             'registrant.email' => 'required|email|max:255',
             'registrant.phone' => 'required|string|max:20',
+            'payment_method' => 'required|in:midtrans,manual_transfer',
         ]);
 
         $result = $this->service->register($validated);

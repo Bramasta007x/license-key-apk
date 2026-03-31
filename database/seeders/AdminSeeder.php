@@ -12,7 +12,7 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
         Admin::updateOrCreate(
-            ["email" => "jayapuramusicfest@gmail.com"],
+            ["email" => "admin@gmail.com"],
             [
                 "id" => Str::uuid(),
                 "name" => "Super Admin",
