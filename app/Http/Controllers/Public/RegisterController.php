@@ -17,6 +17,8 @@ class RegisterController extends Controller
             'registrant.email' => 'required|email|max:255',
             'registrant.phone' => 'required|string|max:20',
             'payment_method' => 'required|in:midtrans,manual_transfer',
+            'product_id' => 'nullable|uuid|exists:products,id',
+            'total_cost' => 'required|numeric|min:1',
         ]);
 
         $result = $this->service->register($validated);

@@ -23,7 +23,12 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
+            'is_default' => 'sometimes|boolean',
         ]);
+
+        if (!empty($validated['is_default'])) {
+            Product::where('is_default', true)->update(['is_default' => false]);
+        }
 
         $product = Product::create($validated);
 
@@ -48,7 +53,12 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'price' => 'sometimes|numeric|min:0',
+            'is_default' => 'sometimes|boolean',
         ]);
+
+        if (!empty($validated['is_default'])) {
+            Product::where('id', '!=', $product->id)->where('is_default', true)->update(['is_default' => false]);
+        }
 
         $product->update($validated);
 
@@ -75,6 +85,27 @@ class ProductController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Product deleted successfully',
+        ]);
+    }
+
+    public function setDefault(string $id)
+    {
+        $product = Product::find($id);
+
+        if (! $product) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product not found',
+            ], 404);
+        }
+
+        Product::where('is_default', true)->update(['is_default' => false]);
+        $product->update(['is_default' => true]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Product set as default successfully',
+            'data' => $product,
         ]);
     }
 }

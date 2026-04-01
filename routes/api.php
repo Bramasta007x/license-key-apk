@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminProfileController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\PaymentApprovalController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Payment\PaymentController;
 use App\Http\Controllers\Public\LicenseController;
 use App\Http\Controllers\Public\OrderController;
@@ -46,6 +47,9 @@ Route::prefix('v1')->group(function () {
             Route::post('/products', [\App\Http\Controllers\Admin\ProductController::class, 'store']);
             Route::put('/products/{id}', [\App\Http\Controllers\Admin\ProductController::class, 'update']);
             Route::delete('/products/{id}', [\App\Http\Controllers\Admin\ProductController::class, 'destroy']);
+            Route::put('/products/{id}/set-default', [\App\Http\Controllers\Admin\ProductController::class, 'setDefault']);
+
+            Route::get('/orders', [AdminOrderController::class, 'index']);
         });
     });
 });

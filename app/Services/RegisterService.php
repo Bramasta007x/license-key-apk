@@ -9,7 +9,7 @@ use Midtrans\Snap;
 
 class RegisterService
 {
-    private const LICENSE_PRICE = 15000000;
+    private const FALLBACK_PRICE = 15000000;
 
     private const PAYMENT_METHOD_MIDTRANS = 'midtrans';
 
@@ -22,7 +22,9 @@ class RegisterService
             $paymentMethod = $payload['payment_method'] ?? self::PAYMENT_METHOD_MIDTRANS;
 
             $serialNumber = $this->generateSerialNumber();
-            $totalCost = self::LICENSE_PRICE;
+
+            // Use total_cost from frontend (already includes PPN)
+            $totalCost = (int) $payload['total_cost'];
 
             $registrant = Registrant::create([
                 'serial_number' => $serialNumber,
@@ -62,7 +64,7 @@ class RegisterService
                 $response['order']['redirect_url'] = $midtransData['redirect_url'];
                 $order->update(['midtrans_snap_token' => $midtransData['snap_token']]);
             } elseif ($paymentMethod === self::PAYMENT_METHOD_MANUAL) {
-                $response['order']['payment_instructions'] = $this->getPaymentInstructions();
+                $response['order']['payment_instructions'] = $this->getPaymentInstructions($totalCost);
             }
 
             return $response;
@@ -107,7 +109,7 @@ class RegisterService
         ];
     }
 
-    public function getPaymentInstructions(): array
+    public function getPaymentInstructions(int $amount = null): array
     {
         return [
             'bank_accounts' => config('midtrans.bank_accounts', []),
@@ -118,7 +120,7 @@ class RegisterService
                 'Upload bukti transfer melalui halaman pembayaran.',
                 'Tunggu konfirmasi dari admin (1x24 jam).',
             ],
-            'amount' => self::LICENSE_PRICE,
+            'amount' => $amount ?? self::FALLBACK_PRICE,
         ];
     }
 
