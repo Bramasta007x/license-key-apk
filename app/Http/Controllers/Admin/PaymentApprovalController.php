@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class PaymentApprovalController extends Controller
 {
@@ -18,7 +19,14 @@ class PaymentApprovalController extends Controller
             ->where('method', 'manual_transfer')
             ->where('status', 'pending_verification')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($payment) {
+                if ($payment->payment_proof_url) {
+                    $payment->payment_proof_url = Storage::disk('public')->url($payment->payment_proof_url);
+                }
+
+                return $payment;
+            });
 
         return response()->json([
             'success' => true,

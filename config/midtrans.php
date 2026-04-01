@@ -5,7 +5,7 @@ return [
     'server_key' => env('MIDTRANS_SERVER_KEY'),
     'client_key' => env('MIDTRANS_CLIENT_KEY'),
 
-    // Rekening bank untuk manual transfer
+    // Rekening bank untuk manual transfer -> NEED CEK!!
     'bank_accounts' => [
         [
             'bank_name' => 'BCA',

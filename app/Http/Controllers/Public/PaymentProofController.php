@@ -7,7 +7,6 @@ use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class PaymentProofController extends Controller
 {
@@ -29,18 +28,20 @@ class PaymentProofController extends Controller
         }
 
         $file = $validated['payment_proof'];
-        $filename = 'payment_proofs/'.$order->order_number.'_'.time().'.'.$file->getClientOriginalExtension();
+        $originalName = $file->getClientOriginalName();
 
-        $path = $file->storeAs('public', $filename);
-
-        $paymentProofUrl = Storage::url($path);
+        $path = $file->storeAs(
+            'payment-proof',
+            $originalName,
+            'public'
+        );
 
         $payment = Payment::create([
             'order_id' => $order->id,
             'amount' => $order->amount,
             'method' => 'manual_transfer',
             'status' => 'pending_verification',
-            'payment_proof_url' => $paymentProofUrl,
+            'payment_proof_url' => $path,
             'payment_recipient_account' => $validated['recipient_account'],
         ]);
 
@@ -54,7 +55,7 @@ class PaymentProofController extends Controller
             'message' => 'Payment proof uploaded successfully. Waiting for admin approval.',
             'data' => [
                 'payment_id' => $payment->id,
-                'payment_proof_url' => $paymentProofUrl,
+                'payment_proof_url' => $path,
             ],
         ], 201);
     }
