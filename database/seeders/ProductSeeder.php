@@ -12,11 +12,13 @@ class ProductSeeder extends Seeder
         Product::create([
             'name' => 'Eficon Premium License',
             'price' => 15000000,
+            'is_default' => true,
         ]);
 
         Product::create([
             'name' => 'Eficon Gold License',
             'price' => 25000000,
+            'is_default' => false,
         ]);
     }
 }

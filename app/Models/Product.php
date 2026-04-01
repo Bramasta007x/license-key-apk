@@ -19,9 +19,11 @@ class Product extends Model
     protected $fillable = [
         'name',
         'price',
+        'is_default',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'is_default' => 'boolean',
     ];
 }
