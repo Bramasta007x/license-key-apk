@@ -17,6 +17,8 @@ Route::prefix('v1')->group(function () {
 
     Route::post('payment/upload-proof', [PaymentProofController::class, 'upload']);
 
+    Route::get('products', [\App\Http\Controllers\Admin\ProductController::class, 'index']);
+
     Route::get('orders/{order_number}/status', [
         OrderController::class,
         'status',
@@ -39,6 +41,11 @@ Route::prefix('v1')->group(function () {
             Route::get('/payments/pending', [PaymentApprovalController::class, 'listPendingPayments']);
             Route::post('/payments/approve', [PaymentApprovalController::class, 'approve']);
             Route::post('/payments/reject', [PaymentApprovalController::class, 'reject']);
+
+            Route::get('/products', [\App\Http\Controllers\Admin\ProductController::class, 'index']);
+            Route::post('/products', [\App\Http\Controllers\Admin\ProductController::class, 'store']);
+            Route::put('/products/{id}', [\App\Http\Controllers\Admin\ProductController::class, 'update']);
+            Route::delete('/products/{id}', [\App\Http\Controllers\Admin\ProductController::class, 'destroy']);
         });
     });
 });
