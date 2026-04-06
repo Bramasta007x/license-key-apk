@@ -9,18 +9,8 @@ return [
     'bank_accounts' => [
         [
             'bank_name' => 'BCA',
-            'account_number' => '1234567890',
-            'account_name' => 'PT Eficon Indonesia',
-        ],
-        [
-            'bank_name' => 'Mandiri',
-            'account_number' => '0987654321',
-            'account_name' => 'PT Eficon Indonesia',
-        ],
-        [
-            'bank_name' => 'BNI',
-            'account_number' => '1122334455',
-            'account_name' => 'PT Eficon Indonesia',
-        ],
+            'account_number' => '788-0873398',
+            'account_name' => 'JOZZ ABADI SENTOSA CV',
+        ]
     ],
 ];
